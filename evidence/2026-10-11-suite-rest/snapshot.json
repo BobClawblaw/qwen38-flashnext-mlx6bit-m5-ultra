@@ -1,0 +1,11 @@
+{
+ "name": "snapshot",
+ "score": 1.0,
+ "cases": 12,
+ "passed": 12,
+ "seconds": 11.001276969909668,
+ "notes": [
+  "replies written to /Users/xian/github/qwen38-flashnext-mlx6bit-m5-ultra/evidence/2026-10-11-suite-rest/replies.json"
+ ],
+ "details": {}
+}
