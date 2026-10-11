@@ -1,0 +1,51 @@
+{
+ "url": "http://127.0.0.1:8080",
+ "model": "Qwen3.8-Flash-Next-MLX-6bit",
+ "rows": [
+  {
+   "asked": 4000,
+   "prompt_tokens": 4108,
+   "ttft_s": 3.09,
+   "prefill_tok_s": 1330,
+   "found": true,
+   "cached": 2,
+   "reply": "The access code for run 1000 is 915117."
+  },
+  {
+   "asked": 16000,
+   "prompt_tokens": 16794,
+   "ttft_s": 3.95,
+   "prefill_tok_s": 4253,
+   "found": true,
+   "cached": 2,
+   "reply": "The access code for run 1001 is 935349."
+  },
+  {
+   "asked": 64000,
+   "prompt_tokens": 68869,
+   "ttft_s": 15.61,
+   "prefill_tok_s": 4411,
+   "found": true,
+   "cached": 2,
+   "reply": "The access code for run 1002 is 646253."
+  },
+  {
+   "asked": 128000,
+   "prompt_tokens": 139000,
+   "ttft_s": 34.14,
+   "prefill_tok_s": 4071,
+   "found": true,
+   "cached": 2,
+   "reply": "The access code for run 1003 is 621500."
+  },
+  {
+   "asked": 240000,
+   "prompt_tokens": 261221,
+   "ttft_s": 71.7,
+   "prefill_tok_s": 3643,
+   "found": true,
+   "cached": 2,
+   "reply": "The access code for run 1004 is 541581."
+  }
+ ]
+}

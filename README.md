@@ -1,4 +1,3 @@
-### BEING MEASURED — numbers land here with their receipts under `evidence/`
 # Qwen3.8-Flash-Next MLX 6-bit on one M5 Ultra
 
 Serve [TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP](https://huggingface.co/TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP),
@@ -21,10 +20,54 @@ against this server from a pinned clone (`python3 -m mac suite|ruler`).
 
 ## Measured on this Mac
 
-Not yet. The first `up`, then `python3 -m mac ruler` and `python3 -m mac suite`, write JSON under the folder you name;
-the table goes here with its receipts under `evidence/`. Neighbourhood only: GLM-5.3-Flash on the same Mac and engine
-family decodes 92-105 tok/s for one user and reads prompts at about 1,700 tok/s; MTPLX's 4-bit Flash-Next pack decodes
-73-79 tok/s on an M5 Max.
+Mac Studio M5 Ultra, 256 GB, TensorFold v1.0.7 (`e7c523eb`), the checkpoint at `45032a19`, greedy, thinking off, one
+request at a time, measured 2026-10-11. The model loads in 36-46 s with its packs built and the files in the page cache.
+
+Decode with `bench/ruler.py`: 256-token replies, a distinct prompt per phase, median of 3 runs
+([`evidence/2026-10-11-first-ruler/ruler-1user.json`](evidence/2026-10-11-first-ruler/ruler-1user.json)); two
+back-to-back runs agreed within 1 tok/s:
+
+| Users | prose | code | structured | list | first token |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 144.5 | 206.2 | 172.3 | 194.3 | 0.10-0.20 s |
+
+Tokens a second, MTP drafts on. The suite's `drafts` check measured the same prompts undrafted at 84 tok/s against 143
+drafted, with every drafted reply byte-equal to its undrafted one. `FZ_LANE=1 FZ_GDN=2`, the speed-up recipe's decode
+kernels, measured 4-5% slower on every phase here (137.7 / 199.8 / 165.2 / 187.3,
+[`evidence/2026-10-11-fz-kernels/`](evidence/2026-10-11-fz-kernels/)) and is not set.
+
+Prompt passes with [`tools/prompt_pass.py`](tools/prompt_pass.py): one request each, distinct text so the cache resumes
+none of it, a needle near the start found in every reply
+([`evidence/2026-10-11-prompt-pass/prompt_pass.json`](evidence/2026-10-11-prompt-pass/prompt_pass.json)):
+
+| Prompt | Time to first token | Rate |
+|---:|---:|---:|
+| 4,108 tokens | 3.1 s | 1,330 tok/s |
+| 16,794 | 4.0 s | 4,253 tok/s |
+| 68,869 | 15.6 s | 4,411 tok/s |
+| 139,000 | 34.1 s | 4,071 tok/s |
+| 261,221 (the window, less the reply) | 71.7 s | 3,643 tok/s |
+
+Quality with the Spark recipe's suite, thinking off
+([`evidence/2026-10-11-first-suite/report.md`](evidence/2026-10-11-first-suite/report.md)):
+
+| Check | Result |
+|---|---:|
+| drafted equals undrafted (12 prompts) | 12/12 |
+| streaming equals non-streamed | 4/4 |
+| multi-turn recall | 8/8 facts |
+| stop strings | 3/3 |
+| thinking on: reasoning_content, no think tags in content | 10/10 |
+| copy, byte-identical | 2/2 |
+| max_tokens exact | 3/3 |
+| tool calls (exact function and arguments, optional arguments, parallel calls, no-call cases) | 59/60 |
+| JSON mode, valid | 30/30 |
+
+The one tool miss: asked to "set a timer for 5 minutes", the model added a `label` argument the schema marks optional.
+IFEval, GSM8K, MMLU and HumanEval are not run yet.
+
+For the neighbourhood: GLM-5.3-Flash on this Mac and engine family decodes 92-105 tok/s for one user and reads prompts
+at about 1,700 tok/s; MTPLX's 4-bit Flash-Next pack decodes 73-79 tok/s on an M5 Max.
 
 ## Requirements
 
