@@ -97,7 +97,22 @@ engine refused four slots (`OverMemoryLimit`), since the engine's 70% cap on a 2
 173 GiB in use once loaded. Four shared streams deliver about 1.5-1.6x the single stream's tokens, each user seeing a
 first token in a third of a second instead of waiting its turn; the shared path costs a lone user 6-12%. On the shared
 server the suite's exactness checks hold: four streams together equal each alone 12/12, drafted equals undrafted 12/12
-(137 against 81 tok/s). Not in this
+(137 against 81 tok/s).
+
+Four streams at the full window need the cap lifted, which a small change to the PR does: `FLASHNEXT_LOAD_LIMIT_GB`,
+read as GLM's `GLM_LOAD_LIMIT_GB` is (a load limit in GB, up to the GPU's recommended working set, with the same warning
+past 70%). With it at 225 and `--parallel 4 --context 262144`, four 262,112-token sessions open (each holds 7.5 GiB of
+attention state), and ([`evidence/2026-10-11-pr606-parallel/`](evidence/2026-10-11-pr606-parallel/), the `-256k` files):
+
+| | prose | code | structured | list |
+|---|---:|---:|---:|---:|
+| 1 user | 129.6 | 177.3 | 150.2 | 180.0 |
+| 4 users, aggregate | 212.1 | 313.2 | 247.9 | 306.5 |
+
+the same as at 16k; exactness 12/12 on both checks. Four 217k-token prompts sent at once all answered their needle,
+their first tokens at 59, 118, 180 and 241 s (prompt passes are serial across streams at about 3,700 tok/s in total),
+and a 261,300-token prompt alone read in 71.5 s, as on the single-stream build. The least free memory seen during the
+run was 32 GiB of 256. Not in this
 recipe: the PR is open, its author and ashhart are shaping it into the engine's default path with sampling, and this run
 is a data point for that, not a release.
 

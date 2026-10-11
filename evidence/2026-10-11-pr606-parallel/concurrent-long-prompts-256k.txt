@@ -1,0 +1,9 @@
+four 200k prompts at once (distinct text, a needle each):
+   217434 tokens  ttft  179.5 s  found=True  'The access code for run 2001 is 714918.'
+   217415 tokens  ttft  241.1 s  found=True  'The access code for run 2002 is 862829.'
+   217383 tokens  ttft  118.0 s  found=True  'The access code for run 2003 is 218241.'
+   217373 tokens  ttft   58.7 s  found=True  'The access code for run 2004 is 650025.'
+  all four first tokens within 241.7 s wall; 869605 prompt tokens in flight
+one prompt at the window's edge, alone:
+        0 tokens  ttft    0.0 s  None tok/s  found=False  ''
+edge prompt, alone (asked 240000): 261300 tokens  ttft 71.52 s  3653 tok/s  found=True  'The access code for run 2005 is 572248.'

@@ -1,0 +1,50 @@
+{
+ "four_at_once": [
+  {
+   "asked": 200000,
+   "prompt_tokens": 217434,
+   "ttft_s": 179.46,
+   "prefill_tok_s": 1212,
+   "found": true,
+   "cached": 0,
+   "reply": "The access code for run 2001 is 714918."
+  },
+  {
+   "asked": 200000,
+   "prompt_tokens": 217415,
+   "ttft_s": 241.1,
+   "prefill_tok_s": 902,
+   "found": true,
+   "cached": 0,
+   "reply": "The access code for run 2002 is 862829."
+  },
+  {
+   "asked": 200000,
+   "prompt_tokens": 217383,
+   "ttft_s": 117.98,
+   "prefill_tok_s": 1843,
+   "found": true,
+   "cached": 0,
+   "reply": "The access code for run 2003 is 218241."
+  },
+  {
+   "asked": 200000,
+   "prompt_tokens": 217373,
+   "ttft_s": 58.67,
+   "prefill_tok_s": 3705,
+   "found": true,
+   "cached": 0,
+   "reply": "The access code for run 2004 is 650025."
+  }
+ ],
+ "wall_s": 241.7,
+ "edge": {
+  "asked": 240000,
+  "prompt_tokens": 261300,
+  "ttft_s": 71.52,
+  "prefill_tok_s": 3653,
+  "found": true,
+  "cached": 0,
+  "reply": "The access code for run 2005 is 572248."
+ }
+}
