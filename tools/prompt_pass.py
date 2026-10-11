@@ -1,6 +1,6 @@
 """Prompt passes at several lengths: time to the first token and the read rate, one request each, nothing cached.
 
-    python3 tools/prompt_pass.py --url http://127.0.0.1:8080 --model NAME --sizes 4000 16000 64000 128000 250000 --json OUT
+    python3 tools/prompt_pass.py --url http://127.0.0.1:8888 --model NAME --sizes 4000 16000 64000 128000 250000 --json OUT
 
 Each prompt is distinct text (a numbered run of sentences with a random seed in front) so the prompt cache resumes
 none of it; a needle sentence sits near the start and the question at the end asks for it, so the reply shows the
@@ -68,7 +68,7 @@ def one(url: str, model: str, size: int, seed: int) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--url", default="http://127.0.0.1:8080")
+    ap.add_argument("--url", default="http://127.0.0.1:8888")
     ap.add_argument("--model", required=True)
     ap.add_argument("--sizes", type=int, nargs="+", default=[4000, 16000, 64000, 128000, 250000])
     ap.add_argument("--json")

@@ -21,7 +21,7 @@ binary = ""
 
 [local]
 host = "127.0.0.1"
-port = 8080
+port = 8888
 hf_cache = "~/.cache/huggingface"
 tf_cache = "~/.cache/tensorfold-qwen38-mlx6bit"
 request_log = ""                         # a file for TENSORFOLD_REQUEST_LOG; empty logs no requests
