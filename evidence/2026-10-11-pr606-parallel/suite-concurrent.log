@@ -1,0 +1,4 @@
+quality suite: http://127.0.0.1:8081 as fn606; checks: concurrent, drafts
+concurrent        12/12     100.0%  (20s)  4 streams together vs alone
+drafts            12/12     100.0%  (33s)  drafted 137 tok/s vs undrafted 81 tok/s
+report: /Users/xian/github/qwen38-flashnext-mlx6bit-m5-ultra/evidence/2026-10-11-pr606-parallel/suite-concurrent/report.md

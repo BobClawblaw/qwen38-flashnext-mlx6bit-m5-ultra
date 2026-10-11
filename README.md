@@ -48,12 +48,15 @@ none of it, a needle near the start found in every reply
 | 139,000 | 34.1 s | 4,071 tok/s |
 | 261,221 (the window, less the reply) | 71.7 s | 3,643 tok/s |
 
-Quality with the Spark recipe's suite, thinking off
-([`evidence/2026-10-11-first-suite/report.md`](evidence/2026-10-11-first-suite/report.md)):
+Quality with the Spark recipe's suite, thinking off, every check it has but vision (not served here):
+[`evidence/2026-10-11-first-suite/`](evidence/2026-10-11-first-suite/report.md),
+[`evidence/2026-10-11-suite-rest/`](evidence/2026-10-11-suite-rest/report.md),
+[`evidence/2026-10-11-humaneval/`](evidence/2026-10-11-humaneval/report.md).
 
 | Check | Result |
 |---|---:|
 | drafted equals undrafted (12 prompts) | 12/12 |
+| concurrent: 4 streams together equal each alone (queued, one lane) | 12/12 |
 | streaming equals non-streamed | 4/4 |
 | multi-turn recall | 8/8 facts |
 | stop strings | 3/3 |
@@ -62,12 +65,41 @@ Quality with the Spark recipe's suite, thinking off
 | max_tokens exact | 3/3 |
 | tool calls (exact function and arguments, optional arguments, parallel calls, no-call cases) | 59/60 |
 | JSON mode, valid | 30/30 |
+| IFEval (150 prompts, 24 instruction types) | 134 loose / 128 strict |
+| GSM8K (250) | 242 (96.8%) |
+| MGSM (8 languages, 30 each) | 225/240 (93.8%) |
+| MMLU (57 subjects, 6 each) | 282/342 (82.5%) |
+| HumanEval, pass@1 greedy (Docker sandbox) | 157/164 (95.7%) |
+| repetition (8 long replies) | 0.21% repeated 4-grams, none hit max_tokens |
+| long-context: needles to 224k, spread facts at 28k/57k/114k/225k | 55/55 |
 
 The one tool miss: asked to "set a timer for 5 minutes", the model added a `label` argument the schema marks optional.
-IFEval, GSM8K, MMLU and HumanEval are not run yet.
+GLM-5.3-Flash on this Mac, with thinking on, scored IFEval 131, GSM8K 248, MMLU 308 of 342 on the same suite; with
+thinking off, 96, 246 and 292. A thinking-on run of this recipe is not done yet.
 
-For the neighbourhood: GLM-5.3-Flash on this Mac and engine family decodes 92-105 tok/s for one user and reads prompts
-at about 1,700 tok/s; MTPLX's 4-bit Flash-Next pack decodes 73-79 tok/s on an M5 Max.
+### Four streams at once: upstream PR #606
+
+Flash Next on Metal serves one reply at a time in v1.0.7; concurrent requests queue. The open upstream PR
+[ashhart/TensorFold#606](https://github.com/ashhart/TensorFold/pull/606) (cwschroeder, continuous batching through the
+shared lane core, `--parallel N`) was merged onto `main` `e7c523eb` (three small conflicts) and run on this Mac with
+this checkpoint, the same ruler at 1 and 4 concurrent requests
+([`evidence/2026-10-11-pr606-parallel/`](evidence/2026-10-11-pr606-parallel/)):
+
+| Build | Streams | prose | code | structured | list | first token |
+|---|---:|---:|---:|---:|---:|---:|
+| #606, `--parallel 1` (the legacy driver), 1 user | 1 | 144.6 | 205.9 | 172.3 | 194.4 | 0.09-0.16 s |
+| #606, `--parallel 4`, 1 user | 1 | 131.0 | 180.0 | 152.7 | 183.3 | 0.12-0.18 s |
+| #606, `--parallel 4`, 4 users, each | 4 | 52.8 | 80.7 | 64.4 | 78.6 | 0.33-0.36 s |
+| #606, `--parallel 4`, 4 users, aggregate | 4 | 213.8 | 321.8 | 254.2 | 314.8 | |
+
+Tokens a second, 65,536-token window for the `--parallel 1` build and 16,384 for `--parallel 4`: at 65k the batching
+engine refused four slots (`OverMemoryLimit`), since the engine's 70% cap on a 256 GB Mac leaves about 4 GiB past the
+173 GiB in use once loaded. Four shared streams deliver about 1.5-1.6x the single stream's tokens, each user seeing a
+first token in a third of a second instead of waiting its turn; the shared path costs a lone user 6-12%. On the shared
+server the suite's exactness checks hold: four streams together equal each alone 12/12, drafted equals undrafted 12/12
+(137 against 81 tok/s). Not in this
+recipe: the PR is open, its author and ashhart are shaping it into the engine's default path with sampling, and this run
+is a data point for that, not a release.
 
 ## Requirements
 
@@ -129,15 +161,19 @@ is not `KEY=VALUE`.
 ## Quality suite and ruler
 
 ```bash
-python3 -m mac ruler -- --runs 3                       # bench/ruler.py --url ... --model ... --concurrency 1
-python3 -m mac suite -- --out evidence/my-run          # quality/suite.py; HumanEval (Docker sandbox) and vision skipped unless --only
-python3 -m mac suite -- --only drafts behaviour tools json
+python3 -m mac ruler -- --runs 3 --json $PWD/evidence/my-run/ruler.json   # bench/ruler.py --url ... --model ... --concurrency 1
+python3 -m mac suite -- --out $PWD/evidence/my-run                        # quality/suite.py; vision skipped unless --only
+python3 -m mac suite -- --out $PWD/evidence/my-run --only drafts behaviour tools json
+python3 -I tools/prompt_pass.py --model Qwen3.8-Flash-Next-MLX-6bit --json $PWD/evidence/my-run/prompt_pass.json
 ```
 
 Both come from the Spark recipe at the commit `recipe.toml` pins (`spark_recipe_sha`), cloned under `.external/`
-(git-ignored) and run with this server's URL and model name. Its `drafts` check compares drafted replies with
-`"draft": false` ones; `concurrent` sends four streams, which this engine serves one at a time, so it measures queueing,
-not sharing.
+(git-ignored) and run with this server's URL and model name, so give them absolute output paths. Its `drafts` check
+compares drafted replies with `"draft": false` ones; `concurrent` sends four streams, which this engine serves one at a
+time, so it measures queueing, not sharing. HumanEval runs the model's code in a Docker sandbox: `--sandbox-image
+python:3.12-slim` works; with Colima (`brew install docker colima`) set `TMPDIR` to a folder under your home, which is
+what Colima shares with its VM. The suite downloads its datasets, so python.org's Python needs
+`SSL_CERT_FILE=$(python3 -c 'import certifi; print(certifi.where())')`.
 
 ## Not supported
 

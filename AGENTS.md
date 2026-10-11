@@ -26,5 +26,11 @@ harness dependencies, stdlib Python only.
 - **Speed knobs to measure, not assume:** `FZ_LANE=1 FZ_GDN=2` (the speed-up recipe's faster decode kernels; replies
   are the same with or without), `--learn` for restart warm-up, `prompt_cache_gib`. A/B each with the ruler before it
   becomes a default.
+- **Suite plumbing on this Mac:** give the ruler and suite absolute `--json`/`--out` paths (they run from the clone);
+  HumanEval needs Docker (Colima here), `--sandbox-image python:3.12-slim`, and `TMPDIR` under `$HOME` (Colima shares
+  only home); dataset downloads need `SSL_CERT_FILE` from certifi on python.org's Python.
+- **Four streams exist upstream, not here:** ashhart/TensorFold#606 (shared lane core for Flash Next on Metal) was run
+  on this Mac from a merge onto main (the README's table). A 65k window with four slots hits the engine's 70% RAM cap;
+  16k fits. Re-measure when it lands as the default path; until then `--parallel` stays refused.
 - **Not on Metal in v1.0.7 for Flash Next:** `--parallel` past one reply, `--kv-dtype`, `--vision`, `--tool-system`,
   grammars, YaRN. The guards refuse the flags so a setting is never silently ignored.
